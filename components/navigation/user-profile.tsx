@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,12 +20,30 @@ import {
 
 export default function UserProfile() {
   const [user, setUser] = useState({
-    username: "jonlarale",
-    email: "jonlarale@gmail.com",
-    userId: "1",
+    role: sessionStorage.getItem("role"),
+    email: sessionStorage.getItem("email"),
+    userId: sessionStorage.getItem("user_id"),
+    isLogged: sessionStorage.getItem("is_logged") === "true",
   });
+  const router = useRouter();
+  const usernameShortcut = "UN";
 
-  const usernameShortcut = user.username.slice(0, 2).toUpperCase();
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUser({
+        role: sessionStorage.getItem("role"),
+        email: sessionStorage.getItem("email"),
+        userId: sessionStorage.getItem("user_id"),
+        isLogged: sessionStorage.getItem("is_logged") === "true",
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!user.isLogged) {
+    return null;
+  }
 
   return (
     <DropdownMenu>
@@ -39,7 +58,7 @@ export default function UserProfile() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.username}</p>
+            <p className="text-sm font-medium leading-none">{user.role}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>
@@ -56,7 +75,21 @@ export default function UserProfile() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          Cerrar sesión
+          <button
+            className="m-0 p-0 w-full text-left"
+            onClick={() => {
+              sessionStorage.removeItem("access_token");
+              localStorage.removeItem("access_token");
+              sessionStorage.removeItem("user_id");
+              sessionStorage.removeItem("role");
+              sessionStorage.removeItem("email");
+              sessionStorage.removeItem("is_logged");
+              router.push("/auth/login");
+            }}
+          >
+            Cerrar sesión
+          </button>
+
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>

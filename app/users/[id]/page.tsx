@@ -1,7 +1,8 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import Link from "next/link";
+import axios from "axios";
 
 import { Pencil } from "lucide-react";
 
@@ -24,33 +25,40 @@ interface User {
   about: string;
 }
 
-const users: User = {
-  username: "johndoe",
-  email: "john.doe@email.com",
-  avatar: "/avatars/01.png",
-  about: `Lorem Ipsum es simplemente el texto de relleno de las imprentas y
-  archivos de texto. Lorem Ipsum ha sido el texto de relleno estándar
-  de las industrias desde el año 1500, cuando un impresor (N. del T.
-  persona que se dedica a la imprenta) desconocido usó una galería de
-  textos y los mezcló de tal manera que logró hacer un libro de textos
-  especimen. No sólo sobrevivió 500 años, sino que tambien ingresó
-  como texto de relleno en documentos electrónicos, quedando
-  esencialmente igual al original. Fue popularizado en los 60s con la
-  creación de las hojas "Letraset", las cuales contenian pasajes de
-  Lorem Ipsum, y más recientemente con software de autoedición, como
-  por ejemplo Aldus PageMaker, el cual incluye versiones de Lorem
-  Ipsum.
-  como texto de relleno en documentos electrónicos, quedando
-  esencialmente igual al original. Fue popularizado en los 60s con la
-  creación de las hojas "Letraset", las cuales contenian pasajes de
-  Lorem Ipsum, y más recientemente con software de autoedición, como
-  por ejemplo Aldus PageMaker, el cual incluye versiones de Lorem
-  Ipsum.
-  `,
-};
-
 export default function User({ params }: { params: { id: string } }) {
+  const [user, setUser] = useState<User | null>(null);
   const { id } = params;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token =
+          localStorage.getItem("access_token") ||
+          sessionStorage.getItem("access_token");
+        console.log("token", token);
+        if (!token) {
+          throw new Error("No se encontró el token");
+        }
+
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/users/${id}`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUser(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // Manejar errores según sea necesario
+      }
+    };
+
+    fetchUserData();
+  }, [id]);
+
+  if (!user) {
+    return <div>Cargando...</div>; // O algún otro indicador de carga
+  }
   return (
     <div className="flex justify-center pt-16 h-screen">
       <Card className="w-[300px] md:w-[480px] h-[520px]">
@@ -61,16 +69,14 @@ export default function User({ params }: { params: { id: string } }) {
           <div className="flex items-center justify-between">
             <div className="flex">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={users.avatar} alt="Avatar" />
-                <AvatarFallback>
-                  {users.username.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
+                <AvatarImage src={user.avatar} alt="Avatar" />
+                <AvatarFallback>UN</AvatarFallback>
               </Avatar>
               <div className="ml-4 space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {users.username}
+                  {user.username}
                 </p>
-                <p className="text-sm text-muted-foreground">{users.email}</p>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
             </div>
             <Link href={`/users/${id}/profile`}>
@@ -82,7 +88,7 @@ export default function User({ params }: { params: { id: string } }) {
         </CardContent>
         <CardFooter>
           <ScrollArea className="h-[340px]">
-            <p>{users.about}</p>
+            <p>{user.about}</p>
           </ScrollArea>
         </CardFooter>
       </Card>

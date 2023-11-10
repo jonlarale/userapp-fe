@@ -1,11 +1,14 @@
 "use client";
 
-import * as React from "react";
+import React from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
 
 interface UserRegisterFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -24,6 +27,8 @@ export function UserRegisterForm({
     password: "",
     confirmPassword: "",
   });
+  const { toast } = useToast();
+  const router = useRouter();
 
   const validateField = (name: string, value: string) => {
     let error = "";
@@ -69,7 +74,44 @@ export function UserRegisterForm({
     if (!isValid) return;
     setIsLoading(true);
 
-    // API call
+    try {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`;
+      if (url) {
+        const dataToSend = {
+          email: formData.email,
+          password: formData.password,
+          password_confirmation: formData.confirmPassword,
+        };
+
+        const response = await axios.post(url, dataToSend);
+
+        if (response.status === 201) {
+          toast({
+            title: "Usuario creado",
+            description: "El usuario se creó correctamente",
+          });
+          router.push("/auth/login");
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "No se pudo crear el usuario",
+          });
+        }
+      } else {
+        console.error("API URL not found");
+      }
+    } catch (error) {
+      const errorMessage = error.response
+        ? error.response.data.message
+        : "Error desconocido";
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo crear el usuario: ${errorMessage}`,
+      });
+    }
 
     setIsLoading(false);
   }
@@ -77,7 +119,7 @@ export function UserRegisterForm({
   return (
     <div className={cn(className)} {...props}>
       <form onSubmit={onSubmit} noValidate>
-        <div className="flex md:gap-6 gap-4 flex-col md:flex-row">
+        <div className="flex md:gap-6 gap-4 flex-col ">
           <div className="flex flex-col gap-4">
             {/* Email */}
             <div className="grid gap-1">

@@ -2,11 +2,15 @@
 
 import * as React from "react";
 
+import axios from "axios";
+import { useRouter } from "next/navigation";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "../ui/switch";
+import { useToast } from "@/components/ui/use-toast";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -17,6 +21,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [emailError, setEmailError] = React.useState<string>("");
   const [passwordError, setPasswordError] = React.useState<string>("");
   const [rememberMe, setRememberMe] = React.useState<boolean>(false);
+  const { toast } = useToast();
+  const router = useRouter();
 
   const validateEmail = (emailValue: string) => {
     if (!emailValue) {
@@ -62,8 +68,39 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     if (!validateEmail(email) || !validatePassword(password)) return;
     setIsLoading(true);
 
-    // API call
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/auth/login`;
+    if (url) {
+      const response = await axios.post(url, {
+        email,
+        password,
+      });
 
+      if (response.status === 200) {
+        if (rememberMe) {
+          localStorage.setItem("access_token", response.data.access_token);
+        } else {
+          sessionStorage.setItem("access_token", response.data.access_token);
+        }
+        sessionStorage.setItem("user_id", response.data.user_id);
+        sessionStorage.setItem("role", response.data.role);
+        sessionStorage.setItem("email", response.data.email);
+        sessionStorage.setItem("is_logged", "true");
+
+        if (response.data.role === "admin") {
+          router.push("/users");
+          return;
+        } else {
+          router.push(`/users/${response.data.user_id}`);
+          return;
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: response.data.message,
+          variant: "destructive",
+        });
+      }
+    }
     setIsLoading(false);
   }
 

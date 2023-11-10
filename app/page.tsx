@@ -5,7 +5,7 @@ import { Github } from "lucide-react";
 export default function Home() {
   return (
     <main className="flex flex-col items-center gap-16 mt-16 px-8">
-      <div className="flex flex-col items-center gap-2 my-auto">
+      <div className="flex flex-col items-center gap-4 my-auto">
         <h1 className="text-4xl font-bold text-center lg:text-left mb-4">
           User App
         </h1>
@@ -15,16 +15,16 @@ export default function Home() {
         </p>
         <div className="text-xl text-center lg:text-left max-w-[500px]">
           Si quieres ver el código de este app, puedes ir a{" "}
-          <div className="flex gap-2">
-            <Github className="w-4 h-4 ml-1 mb-4" />
-            <a
-              href="https://github.com/jonlarale"
-              className="text-blue-500 underline"
-              target="_blank"
-            >
-              mi Github
-            </a>
-          </div>
+        </div>
+        <div className="flex gap-2">
+          <a
+            href="https://github.com/jonlarale"
+            className="text-blue-500 underline"
+            target="_blank"
+          >
+            mi Github
+          </a>
+          <Github className="w-5 h-5 ml-1 my-auto" />
         </div>
         <div className="text-xl text-center lg:text-left max-w-[500px]">
           También puedes visitar mi página web en{" "}
