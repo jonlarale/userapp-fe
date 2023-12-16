@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import * as XLSX from "xlsx";
 
 import { Button } from "@/components/ui/button";
 
@@ -200,9 +201,27 @@ const rows = [
 ];
 
 export default function DataTable() {
-  const onClickHandler = () => {
-    console.log("Clicked");
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Transacciones");
+
+    // Buffer
+    let buf = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+
+    // Create a Blob from the Buf and download it
+    const blob = new Blob([buf], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "transacciones.xlsx";
+    a.click();
+
+    window.URL.revokeObjectURL(url);
   };
+
   return (
     <div className="mt-8 flex flex-col mx-auto px-8">
       <h1 className="text-3xl font-bold text-center my-4">
@@ -220,7 +239,7 @@ export default function DataTable() {
         checkboxSelection
       />
       <div className="flex justify-end my-4">
-        <Button onClick={onClickHandler}>Descargar Excel</Button>
+        <Button onClick={downloadExcel}>Descargar Excel</Button>
       </div>
     </div>
   );
