@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "User App - Auth",
-  description: "Ejemplo de app para gestionar usuarios",
+  title: "Transactions App - Auth",
+  description: "Consulta las transacciones",
 };
 
 export default function RootLayout({
